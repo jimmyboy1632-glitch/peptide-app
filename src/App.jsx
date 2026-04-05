@@ -1,649 +1,334 @@
 import { useState, useEffect } from "react";
+import { CHUNK1 } from "./peptideData_p1";
+import { CHUNK2 } from "./peptideData_p2";
+import { CHUNK3 } from "./peptideData_p3";
 
-const PEPTIDES = [
-  {
-    name: "BPC-157",
-    category: "Healing & Recovery",
-    emoji: "🩹",
-    description: "Body Protection Compound-157. A pentadecapeptide derived from a protein found in gastric juice. One of the most researched healing peptides.",
-    benefits: ["Accelerates wound and tissue healing", "Reduces inflammation", "Protects gut lining (IBS, leaky gut)", "Tendon and ligament repair", "May improve mood and reduce anxiety", "Neuroprotective properties"],
-    dosing: "250–500 mcg per day, injected subcutaneously or IM near injury site",
-    halfLife: "~4 hours",
-    cycle: "4–12 weeks on, 2–4 weeks off",
-    storage: "Lyophilized: room temp. Reconstituted: refrigerate, use within 30 days",
-    notes: "One of the safest and most studied peptides. Often stacked with TB-500 for synergistic healing.",
-    tags: ["healing", "gut", "anti-inflammatory"]
-  },
-  {
-    name: "TB-500",
-    category: "Healing & Recovery",
-    emoji: "💪",
-    description: "Thymosin Beta-4 synthetic fragment. Promotes actin upregulation, enabling cell migration and proliferation for systemic healing.",
-    benefits: ["Full-body systemic healing", "Reduces inflammation and scar tissue", "Accelerates muscle repair", "Improves flexibility", "Promotes angiogenesis (new blood vessel growth)", "May aid hair regrowth"],
-    dosing: "2–2.5 mg twice weekly (loading phase 4–6 weeks), then 1–2 mg weekly (maintenance)",
-    halfLife: "Unknown, effects are long-lasting",
-    cycle: "6–8 weeks loading, 4–6 weeks maintenance",
-    storage: "Lyophilized: room temp. Reconstituted: refrigerate, use within 30 days",
-    notes: "Often stacked with BPC-157. Systemic vs BPC-157's localized effect.",
-    tags: ["healing", "systemic", "anti-inflammatory"]
-  },
-  {
-    name: "Tesamorelin",
-    category: "GH Secretagogue",
-    emoji: "🔬",
-    description: "A GHRH analogue that stimulates the pituitary to release growth hormone. FDA-approved for HIV-associated lipodystrophy.",
-    benefits: ["Reduces visceral adipose tissue (belly fat)", "Increases IGF-1 levels", "Improves body composition", "Cognitive benefits (memory, processing)", "Cardiovascular improvements", "Better sleep quality"],
-    dosing: "1–2 mg subcutaneous injection daily, preferably fasted before bed",
-    halfLife: "~26 minutes (pulse stimulation lasts hours)",
-    cycle: "3–6 months, then assess with labs",
-    storage: "Refrigerate at all times. Do not freeze reconstituted.",
-    notes: "Best taken fasted. Avoid carbs/fats 1–2 hours before dose. Stack with GHRP for amplified GH pulse.",
-    tags: ["fat loss", "GH", "body composition", "cognitive"]
-  },
-  {
-    name: "GHK-Cu",
-    category: "Anti-Aging & Skin",
-    emoji: "✨",
-    description: "Copper peptide naturally occurring in human plasma. Declines with age. Powerful regenerative and anti-aging effects systemically and topically.",
-    benefits: ["Stimulates collagen and elastin production", "Promotes wound healing", "Antioxidant and anti-inflammatory", "Hair follicle regeneration", "Nerve regeneration", "Improves skin density and elasticity", "May remodel scar tissue"],
-    dosing: "Topical: 1–2x daily. Injectable: 1–2 mg subcutaneous daily",
-    halfLife: "~15–30 minutes (topical effects longer-lasting)",
-    cycle: "Continuous use acceptable. Rotate injection sites.",
-    storage: "Topical: cool, dry place. Injectable: refrigerate reconstituted.",
-    notes: "Synergizes well with Tesamorelin for anti-aging protocol. Very well-tolerated.",
-    tags: ["anti-aging", "skin", "collagen", "hair"]
-  },
-  {
-    name: "Ipamorelin",
-    category: "GH Secretagogue",
-    emoji: "🌙",
-    description: "A selective GHRP (growth hormone releasing peptide) that mimics ghrelin. Cleanest GH pulse with minimal side effects.",
-    benefits: ["Increases GH and IGF-1", "Lean muscle gain", "Fat loss", "Improved sleep quality", "Anti-aging effects", "Minimal cortisol or prolactin increase"],
-    dosing: "200–300 mcg, 1–3x daily (ideally before bed, fasted)",
-    halfLife: "~2 hours",
-    cycle: "8–12 weeks on, 4 weeks off",
-    storage: "Lyophilized: room temp. Reconstituted: refrigerate.",
-    notes: "Often stacked with CJC-1295 for a synergistic GH pulse. Considered the mildest GHRP.",
-    tags: ["GH", "sleep", "lean muscle", "fat loss"]
-  },
-  {
-    name: "CJC-1295",
-    category: "GH Secretagogue",
-    emoji: "📈",
-    description: "Modified GHRH analogue with DAC (Drug Affinity Complex) for extended half-life. Provides a sustained GH bleed rather than a pulse.",
-    benefits: ["Sustained elevation of GH and IGF-1", "Muscle growth and recovery", "Fat metabolism", "Improved sleep", "Anti-aging", "Stronger effects when stacked with GHRP"],
-    dosing: "With DAC: 1–2 mg once or twice weekly. Without DAC: 100 mcg 3x daily",
-    halfLife: "With DAC: 6–8 days. Without DAC: ~30 min",
-    cycle: "8–12 weeks on, 4 weeks off",
-    storage: "Refrigerate reconstituted. Stable for 2–4 weeks.",
-    notes: "CJC-1295 w/ DAC stacked with Ipamorelin is one of the most popular GH stacks.",
-    tags: ["GH", "lean muscle", "fat loss", "recovery"]
-  },
-  {
-    name: "Semaglutide",
-    category: "Metabolic",
-    emoji: "⚖️",
-    description: "GLP-1 receptor agonist. FDA-approved for type 2 diabetes and obesity. Acts on brain receptors to reduce appetite and slow gastric emptying.",
-    benefits: ["Significant weight loss", "Reduces appetite and cravings", "Improves insulin sensitivity", "Cardiovascular protection", "May reduce inflammation", "Blood sugar regulation"],
-    dosing: "0.25 mg weekly (starting), titrate up to 0.5–2.4 mg weekly over months",
-    halfLife: "~7 days",
-    cycle: "Long-term use; supervised titration required",
-    storage: "Refrigerate. Do not freeze. Stable at room temp for 28 days after first use.",
-    notes: "Taper slowly. Side effects: nausea, GI distress (usually subside). Use with high-protein diet to preserve muscle.",
-    tags: ["weight loss", "metabolic", "appetite", "insulin"]
-  },
-  {
-    name: "Selank",
-    category: "Nootropic & Mood",
-    emoji: "🧠",
-    description: "Synthetic analogue of the immunomodulatory peptide tuftsin. Developed in Russia. Anxiolytic and nootropic properties.",
-    benefits: ["Reduces anxiety without sedation", "Improves memory and learning", "Mood stabilization", "Immune modulation", "May improve BDNF levels", "No addiction potential"],
-    dosing: "250–3000 mcg intranasally or subcutaneously, 1–2x daily",
-    halfLife: "~2–3 minutes (intranasal effects last hours)",
-    cycle: "2–4 weeks on, 1–2 weeks off",
-    storage: "Refrigerate. Stable 3–4 weeks reconstituted.",
-    notes: "Very well-tolerated. No withdrawal reported. Pairs well with Semax for cognitive enhancement.",
-    tags: ["anxiety", "cognitive", "mood", "nootropic"]
-  },
-  {
-    name: "Semax",
-    category: "Nootropic & Mood",
-    emoji: "⚡",
-    description: "Synthetic ACTH analogue. Developed in Russia for stroke recovery. Powerful nootropic and neuroprotective effects.",
-    benefits: ["Increases BDNF (brain-derived neurotrophic factor)", "Enhances focus and mental clarity", "Neuroprotection", "Reduces stress and anxiety", "Improves memory consolidation", "May aid ADHD symptoms"],
-    dosing: "200–900 mcg intranasally, 1–2x daily in the morning",
-    halfLife: "~2–5 minutes (effects last hours via BDNF)",
-    cycle: "2–4 weeks on, 2 weeks off",
-    storage: "Refrigerate. Use within 2–4 weeks reconstituted.",
-    notes: "Stack with Selank for balanced cognitive + anxiolytic effects. Avoid late-day dosing due to stimulating effects.",
-    tags: ["BDNF", "cognitive", "focus", "neuroprotection"]
-  },
-  {
-    name: "Epithalon",
-    category: "Anti-Aging",
-    emoji: "⏳",
-    description: "Tetrapeptide derived from the pineal gland. Activates telomerase, the enzyme that lengthens telomeres. One of the most promising anti-aging peptides.",
-    benefits: ["Telomere lengthening", "May extend cellular lifespan", "Normalizes melatonin production", "Antioxidant properties", "Improves sleep quality", "May reduce cancer risk (preclinical)"],
-    dosing: "5–10 mg daily for 10–20 days, 1–2 cycles per year",
-    halfLife: "~30–60 minutes",
-    cycle: "10–20 day intensive cycles, 1–2x per year",
-    storage: "Lyophilized: room temp. Reconstituted: refrigerate.",
-    notes: "Protocol-based peptide — not used continuously. Often done as a once or twice yearly anti-aging 'reset.'",
-    tags: ["anti-aging", "telomere", "sleep", "longevity"]
-  },
-  {
-    name: "PT-141 (Bremelanotide)",
-    category: "Sexual Health",
-    emoji: "🔥",
-    description: "Melanocortin receptor agonist. Acts centrally on the brain (not vascular like Viagra) to increase sexual desire in both men and women.",
-    benefits: ["Increases libido in men and women", "Promotes sexual arousal", "May aid erectile dysfunction", "Works within 1–2 hours", "Not dependent on cardiovascular stimulation"],
-    dosing: "0.5–2 mg subcutaneous 1–2 hours before sexual activity as needed",
-    halfLife: "~2–3 hours",
-    cycle: "As needed. Not for daily use.",
-    storage: "Refrigerate reconstituted.",
-    notes: "Side effects: nausea, flushing (dose-dependent). Start at 0.5 mg to assess tolerance. FDA-approved version (Vyleesi) exists.",
-    tags: ["libido", "sexual", "as-needed"]
-  },
-  {
-    name: "AOD-9604",
-    category: "Fat Loss",
-    emoji: "🏃",
-    description: "Modified fragment (176–191) of HGH. Mimics the fat-burning properties of GH without the growth-promoting effects or insulin resistance.",
-    benefits: ["Stimulates lipolysis (fat breakdown)", "Inhibits lipogenesis", "No effect on blood glucose or IGF-1", "May aid cartilage repair", "No risk of acromegaly"],
-    dosing: "250–300 mcg subcutaneous daily, fasted in the morning",
-    halfLife: "~30 minutes",
-    cycle: "8–12 weeks",
-    storage: "Refrigerate reconstituted. Room temp lyophilized.",
-    notes: "Best taken fasted with no food 30 min before/after. Excellent addition to fat loss stacks.",
-    tags: ["fat loss", "lipolysis", "body composition"]
-  }
-];
+const ALL = [...CHUNK1, ...CHUNK2, ...CHUNK3];
+const uniq = arr => [...new Set(arr)];
+const CATS = ["All", ...uniq(ALL.map(p => p.category))];
 
-const UNITS = ["mcg", "mg", "IU", "ml"];
-const FREQUENCIES = ["Once daily", "Twice daily", "3x daily", "Every other day", "Weekly", "Twice weekly", "As needed"];
-
-const categoryColors = {
-  "Healing & Recovery": { bg: "#0f2a1a", accent: "#22c55e", light: "#bbf7d0" },
-  "GH Secretagogue": { bg: "#0f1f2e", accent: "#38bdf8", light: "#bae6fd" },
-  "Anti-Aging & Skin": { bg: "#1e1228", accent: "#c084fc", light: "#e9d5ff" },
-  "Anti-Aging": { bg: "#1e1228", accent: "#c084fc", light: "#e9d5ff" },
-  "Nootropic & Mood": { bg: "#1a1a0f", accent: "#facc15", light: "#fef08a" },
-  "Metabolic": { bg: "#1f1209", accent: "#fb923c", light: "#fed7aa" },
-  "Sexual Health": { bg: "#1f0f0f", accent: "#f87171", light: "#fecaca" },
-  "Fat Loss": { bg: "#0f1f1f", accent: "#2dd4bf", light: "#99f6e4" },
+const PAL = {
+  "Healing & Recovery":   { bg:"#071a0e", a:"#22c55e", ch:"#14532d" },
+  "GH Secretagogue":      { bg:"#071020", a:"#38bdf8", ch:"#0c2a4a" },
+  "Anti-Aging & Skin":    { bg:"#150e22", a:"#c084fc", ch:"#3b0764" },
+  "Anti-Aging":           { bg:"#150e22", a:"#c084fc", ch:"#3b0764" },
+  "Nootropic & Mood":     { bg:"#181500", a:"#facc15", ch:"#422006" },
+  "Nootropic":            { bg:"#181500", a:"#facc15", ch:"#422006" },
+  "Metabolic":            { bg:"#1c0e00", a:"#fb923c", ch:"#431407" },
+  "Fat Loss":             { bg:"#001818", a:"#2dd4bf", ch:"#042f2e" },
+  "Sexual Health":        { bg:"#1c0505", a:"#f87171", ch:"#450a0a" },
+  "Sleep & Recovery":     { bg:"#060820", a:"#818cf8", ch:"#1e1b4b" },
+  "Muscle & Performance": { bg:"#1a0a00", a:"#f97316", ch:"#431407" },
+  "Hormonal":             { bg:"#12091a", a:"#a78bfa", ch:"#2e1065" },
+  "Gut Health":           { bg:"#041208", a:"#4ade80", ch:"#052e16" },
+  "SARMs":                { bg:"#1a0505", a:"#ef4444", ch:"#450a0a" },
+  "Performance":          { bg:"#001a20", a:"#06b6d4", ch:"#083344" },
+  "Vitamins & Basics":    { bg:"#090d1f", a:"#6366f1", ch:"#1e1b4b" },
 };
+const pc = cat => PAL[cat] || { bg:"#0d0d0d", a:"#6366f1", ch:"#1e1b4b" };
 
-const defaultColor = { bg: "#111827", accent: "#6366f1", light: "#c7d2fe" };
-
-function getColor(category) {
-  return categoryColors[category] || defaultColor;
-}
-
-// ─── PEPTIDE LIBRARY ────────────────────────────────────────────────────────
-
-function PeptideCard({ peptide, onClick }) {
-  const c = getColor(peptide.category);
+// ─── Card ─────────────────────────────────────────────────────────────────────
+function Card({ p, onOpen }) {
+  const c = pc(p.category);
   return (
-    <div
-      onClick={() => onClick(peptide)}
-      style={{
-        background: `linear-gradient(135deg, ${c.bg} 0%, #0d0d0d 100%)`,
-        border: `1px solid ${c.accent}22`,
-        borderRadius: 16,
-        padding: "20px",
-        cursor: "pointer",
-        transition: "all 0.2s",
-        position: "relative",
-        overflow: "hidden",
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.borderColor = c.accent + "88";
-        e.currentTarget.style.transform = "translateY(-2px)";
-        e.currentTarget.style.boxShadow = `0 8px 32px ${c.accent}22`;
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.borderColor = c.accent + "22";
-        e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "none";
-      }}
+    <div onClick={() => onOpen(p)}
+      style={{ background:`linear-gradient(145deg,${c.bg} 0%,#0d0d0d 100%)`,
+               border:`1px solid ${c.a}20`, borderRadius:14, padding:"16px 14px",
+               cursor:"pointer", transition:"all .18s" }}
+      onMouseEnter={e=>{e.currentTarget.style.borderColor=c.a+"60";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow=`0 8px 28px ${c.a}18`;}}
+      onMouseLeave={e=>{e.currentTarget.style.borderColor=c.a+"20";e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="";}}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-        <span style={{ fontSize: 28 }}>{peptide.emoji}</span>
+      <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:9}}>
+        <span style={{fontSize:22}}>{p.emoji}</span>
         <div>
-          <div style={{ color: "#fff", fontWeight: 700, fontSize: 16, fontFamily: "'DM Sans', sans-serif" }}>{peptide.name}</div>
-          <div style={{
-            fontSize: 11, fontWeight: 600, letterSpacing: "0.08em",
-            color: c.accent, textTransform: "uppercase", marginTop: 2
-          }}>{peptide.category}</div>
+          <div style={{color:"#f9fafb",fontWeight:700,fontSize:13.5}}>{p.name}</div>
+          <div style={{color:c.a,fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:".08em"}}>{p.category}</div>
         </div>
       </div>
-      <p style={{ color: "#9ca3af", fontSize: 13, lineHeight: 1.5, margin: 0 }}>
-        {peptide.description.slice(0, 100)}...
-      </p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}>
-        {peptide.tags.slice(0, 3).map(t => (
-          <span key={t} style={{
-            background: c.accent + "18", color: c.light,
-            borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 600
-          }}>{t}</span>
+      <p style={{color:"#d1d5db",fontSize:11.5,lineHeight:1.55,margin:"0 0 10px",fontStyle:"italic"}}>{p.summary}</p>
+      <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+        {p.tags.slice(0,3).map(t=>(
+          <span key={t} style={{background:c.ch,color:c.a,borderRadius:20,padding:"2px 8px",fontSize:9.5,fontWeight:600}}>{t}</span>
         ))}
-      </div>
-    </div>
-  );
-}
-
-function PeptideModal({ peptide, onClose }) {
-  const c = getColor(peptide.category);
-  return (
-    <div style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)",
-      zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center",
-      padding: 16, backdropFilter: "blur(6px)"
-    }} onClick={onClose}>
-      <div style={{
-        background: "#0d0d0d", border: `1px solid ${c.accent}44`,
-        borderRadius: 20, maxWidth: 560, width: "100%", maxHeight: "85vh",
-        overflow: "auto", padding: 28, position: "relative",
-        boxShadow: `0 24px 80px ${c.accent}22`
-      }} onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} style={{
-          position: "absolute", top: 16, right: 16,
-          background: "#1f1f1f", border: "none", color: "#9ca3af",
-          borderRadius: 8, width: 32, height: 32, cursor: "pointer", fontSize: 18
-        }}>×</button>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
-          <span style={{ fontSize: 40 }}>{peptide.emoji}</span>
-          <div>
-            <h2 style={{ color: "#fff", margin: 0, fontFamily: "'DM Sans', sans-serif", fontSize: 24 }}>{peptide.name}</h2>
-            <span style={{ color: c.accent, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>{peptide.category}</span>
-          </div>
-        </div>
-        <p style={{ color: "#d1d5db", fontSize: 14, lineHeight: 1.7, marginBottom: 20 }}>{peptide.description}</p>
-
-        <Section title="Benefits" color={c.accent}>
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {peptide.benefits.map(b => (
-              <li key={b} style={{ color: "#d1d5db", fontSize: 13, marginBottom: 5 }}>{b}</li>
-            ))}
-          </ul>
-        </Section>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
-          <InfoBox label="Dosing Protocol" value={peptide.dosing} color={c.accent} />
-          <InfoBox label="Half-Life" value={peptide.halfLife} color={c.accent} />
-          <InfoBox label="Cycle Length" value={peptide.cycle} color={c.accent} />
-          <InfoBox label="Storage" value={peptide.storage} color={c.accent} />
-        </div>
-
-        {peptide.notes && (
-          <div style={{
-            marginTop: 16, background: c.accent + "12", border: `1px solid ${c.accent}33`,
-            borderRadius: 10, padding: "12px 14px"
-          }}>
-            <div style={{ color: c.accent, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>💡 Notes</div>
-            <p style={{ color: "#d1d5db", fontSize: 13, margin: 0 }}>{peptide.notes}</p>
-          </div>
+        {p.research?.length>0&&(
+          <span style={{background:"#0c1f33",color:"#60a5fa",borderRadius:20,padding:"2px 8px",fontSize:9.5,fontWeight:600}}>📚 {p.research.length}</span>
         )}
       </div>
     </div>
   );
 }
 
-function Section({ title, color, children }) {
+// ─── Modal ────────────────────────────────────────────────────────────────────
+function Modal({ p, onClose }) {
+  const c = pc(p.category);
+  const [tab, setTab] = useState("overview");
+  useEffect(()=>{ const h=e=>e.key==="Escape"&&onClose(); window.addEventListener("keydown",h); return()=>window.removeEventListener("keydown",h); },[onClose]);
+
+  const IBox = ({col,bg,lbl,children}) => (
+    <div style={{background:bg||c.bg,border:`1px solid ${col||c.a}25`,borderRadius:10,padding:"11px 13px",marginBottom:10}}>
+      <div style={{color:col||c.a,fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:".08em",marginBottom:5}}>{lbl}</div>
+      <p style={{color:"#d1d5db",fontSize:12.5,margin:0,lineHeight:1.65}}>{children}</p>
+    </div>
+  );
+  const ITile = ({lbl,children}) => (
+    <div style={{background:"#141414",borderRadius:10,padding:"11px 12px"}}>
+      <div style={{color:c.a,fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:".07em",marginBottom:4}}>{lbl}</div>
+      <div style={{color:"#e5e7eb",fontSize:12,lineHeight:1.55}}>{children}</div>
+    </div>
+  );
+
   return (
-    <div style={{ marginBottom: 14 }}>
-      <div style={{ color, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{title}</div>
-      {children}
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.88)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:12,backdropFilter:"blur(6px)"}} onClick={onClose}>
+      <div style={{background:"#0a0a0a",border:`1px solid ${c.a}30`,borderRadius:18,maxWidth:580,width:"100%",maxHeight:"90vh",overflow:"auto",boxShadow:`0 20px 70px ${c.a}18`}} onClick={e=>e.stopPropagation()}>
+        {/* header */}
+        <div style={{padding:"18px 20px 0",position:"sticky",top:0,background:"#0a0a0a",zIndex:10,borderBottom:`1px solid ${c.a}18`,paddingBottom:14}}>
+          <button onClick={onClose} style={{position:"absolute",top:12,right:12,background:"#1c1c1c",border:"none",color:"#9ca3af",borderRadius:7,width:28,height:28,cursor:"pointer",fontSize:17,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+          <div style={{display:"flex",alignItems:"flex-start",gap:11,marginBottom:12}}>
+            <span style={{fontSize:32,flexShrink:0,marginTop:2}}>{p.emoji}</span>
+            <div>
+              <h2 style={{color:"#fff",margin:0,fontSize:18,fontWeight:800}}>{p.name}</h2>
+              <div style={{color:c.a,fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:".1em",margin:"3px 0"}}>{p.category}</div>
+              <div style={{color:"#9ca3af",fontSize:11.5,fontStyle:"italic",lineHeight:1.4}}>{p.summary}</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:4}}>
+            {["overview","details","research"].map(t=>(
+              <button key={t} onClick={()=>setTab(t)} style={{background:tab===t?c.a:"transparent",border:`1px solid ${tab===t?c.a:"#2a2a2a"}`,color:tab===t?"#000":"#6b7280",borderRadius:7,padding:"5px 13px",fontSize:11,cursor:"pointer",fontWeight:600,textTransform:"capitalize"}}>{t}</button>
+            ))}
+          </div>
+        </div>
+        {/* body */}
+        <div style={{padding:"18px 20px 24px"}}>
+          {tab==="overview"&&(
+            <>
+              <div style={{color:c.a,fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:".1em",marginBottom:9}}>What It Is & How It Works</div>
+              <div style={{color:"#d1d5db",fontSize:12.5,lineHeight:1.85,whiteSpace:"pre-wrap",marginBottom:20}}>{p.description}</div>
+              <div style={{color:c.a,fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:".1em",marginBottom:9}}>Key Benefits</div>
+              <ul style={{margin:"0 0 20px",paddingLeft:18}}>{p.benefits.map(b=><li key={b} style={{color:"#d1d5db",fontSize:12.5,marginBottom:5,lineHeight:1.5}}>{b}</li>)}</ul>
+              {p.mechanism&&<IBox lbl="⚗️ Mechanism of Action">{p.mechanism}</IBox>}
+            </>
+          )}
+          {tab==="details"&&(
+            <>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:14}}>
+                {[["💉 Dosing",p.dosing],["⏱ Half-Life",p.halfLife],["🔄 Cycle",p.cycle],["🧊 Storage",p.storage]].map(([l,v])=>(
+                  <ITile key={l} lbl={l}>{v}</ITile>
+                ))}
+              </div>
+              {p.sideEffects&&<IBox col="#f87171" bg="#1a0505" lbl="⚠️ Side Effects">{p.sideEffects}</IBox>}
+              {p.stacksWith&&<IBox col="#38bdf8" bg="#071020" lbl="🔗 Stacks Well With">{p.stacksWith}</IBox>}
+              {p.notes&&<IBox lbl="💡 Notes">{p.notes}</IBox>}
+            </>
+          )}
+          {tab==="research"&&(
+            p.research?.length
+              ? <div style={{display:"flex",flexDirection:"column",gap:7}}>
+                  {p.research.map((r,i)=>(
+                    <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
+                      style={{background:"#0b1a2b",border:"1px solid #1a3a5a",borderRadius:10,padding:"11px 13px",color:"#60a5fa",fontSize:12.5,textDecoration:"none",display:"flex",gap:9,alignItems:"flex-start",transition:"background .15s"}}
+                      onMouseEnter={e=>e.currentTarget.style.background="#112236"}
+                      onMouseLeave={e=>e.currentTarget.style.background="#0b1a2b"}
+                    >
+                      <span style={{flexShrink:0,marginTop:1}}>🔗</span>
+                      <div><div style={{fontWeight:600,lineHeight:1.35}}>{r.title}</div><div style={{color:"#3b6f9e",fontSize:10.5,marginTop:2}}>{r.url.replace("https://","")}</div></div>
+                    </a>
+                  ))}
+                </div>
+              : <div style={{color:"#4b5563",textAlign:"center",padding:"40px 0"}}>No research links for this compound.</div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
-function InfoBox({ label, value, color }) {
-  return (
-    <div style={{ background: "#1a1a1a", borderRadius: 10, padding: "12px" }}>
-      <div style={{ color, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{label}</div>
-      <div style={{ color: "#e5e7eb", fontSize: 12 }}>{value}</div>
-    </div>
-  );
-}
+// ─── Library ──────────────────────────────────────────────────────────────────
+function Library() {
+  const [q, setQ] = useState("");
+  const [cat, setCat] = useState("All");
+  const [sel, setSel] = useState(null);
 
-function LibraryTab() {
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("All");
-  const [selected, setSelected] = useState(null);
-
-  const categories = ["All", ...Array.from(new Set(PEPTIDES.map(p => p.category)))];
-  const filtered = PEPTIDES.filter(p => {
-    const matchCat = filter === "All" || p.category === filter;
-    const q = search.toLowerCase();
-    const matchSearch = !q || p.name.toLowerCase().includes(q) || p.tags.some(t => t.includes(q)) || p.category.toLowerCase().includes(q);
-    return matchCat && matchSearch;
+  const shown = ALL.filter(p => {
+    const mc = cat==="All" || p.category===cat;
+    const lq = q.toLowerCase();
+    const mq = !lq || [p.name,p.category,p.summary,p.description,...p.tags].some(s=>s.toLowerCase().includes(lq));
+    return mc && mq;
   });
 
   return (
     <div>
-      <div style={{ marginBottom: 20 }}>
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Search peptides..."
-          style={{
-            width: "100%", background: "#1a1a1a", border: "1px solid #2d2d2d",
-            borderRadius: 10, padding: "10px 14px", color: "#fff", fontSize: 14,
-            outline: "none", boxSizing: "border-box"
-          }}
-        />
-      </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-        {categories.map(cat => (
-          <button key={cat} onClick={() => setFilter(cat)} style={{
-            background: filter === cat ? "#6366f1" : "#1a1a1a",
-            border: `1px solid ${filter === cat ? "#6366f1" : "#2d2d2d"}`,
-            color: filter === cat ? "#fff" : "#9ca3af",
-            borderRadius: 20, padding: "5px 14px", fontSize: 12,
-            cursor: "pointer", fontWeight: 600, transition: "all 0.15s"
-          }}>{cat}</button>
+      <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search by name, effect, category, tag…"
+        style={{width:"100%",background:"#141414",border:"1px solid #242424",borderRadius:10,padding:"10px 14px",color:"#fff",fontSize:13.5,outline:"none",boxSizing:"border-box",marginBottom:10}}/>
+      <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:10}}>
+        {CATS.map(c=>(
+          <button key={c} onClick={()=>setCat(c)}
+            style={{background:cat===c?"#6366f1":"#141414",border:`1px solid ${cat===c?"#6366f1":"#242424"}`,
+                    color:cat===c?"#fff":"#6b7280",borderRadius:20,padding:"4px 11px",fontSize:10,cursor:"pointer",fontWeight:600}}>
+            {c}
+          </button>
         ))}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
-        {filtered.map(p => <PeptideCard key={p.name} peptide={p} onClick={setSelected} />)}
+      <div style={{color:"#2d2d2d",fontSize:10.5,textAlign:"right",marginBottom:10}}>{shown.length} / {ALL.length}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:9}}>
+        {shown.map(p=><Card key={p.name} p={p} onOpen={setSel}/>)}
       </div>
-      {selected && <PeptideModal peptide={selected} onClose={() => setSelected(null)} />}
+      {sel&&<Modal p={sel} onClose={()=>setSel(null)}/>}
     </div>
   );
 }
 
-// ─── CALCULATOR ─────────────────────────────────────────────────────────────
-
-function CalculatorTab() {
-  const [vialMg, setVialMg] = useState(5);
-  const [bacWater, setBacWater] = useState(2);
-  const [desiredDose, setDesiredDose] = useState(500);
-  const [unit, setUnit] = useState("mcg");
-
-  const concentration = bacWater > 0 ? (vialMg * 1000) / bacWater : 0; // mcg/ml
-  const drawMl = unit === "mcg"
-    ? (concentration > 0 ? desiredDose / concentration : 0)
-    : (concentration > 0 ? (desiredDose * 1000) / concentration : 0);
-  const drawUnits = drawMl * 100; // insulin syringe units
-
-  const rows = [0.25, 0.5, 1, 2].map(d => {
-    const dose_mcg = unit === "mcg" ? d * desiredDose : d * desiredDose * 1000;
-    const ml = concentration > 0 ? dose_mcg / concentration : 0;
-    return { label: `${d}x (${d * desiredDose} ${unit})`, ml: ml.toFixed(3), units: (ml * 100).toFixed(1) };
-  });
-
+// ─── Calculator ───────────────────────────────────────────────────────────────
+function Calc() {
+  const [vm,setVm]=useState(5); const [bw,setBw]=useState(2);
+  const [d,setD]=useState(500); const [u,setU]=useState("mcg");
+  const conc=bw>0?(vm*1000)/bw:0;
+  const dmcg=u==="mcg"?d:d*1000;
+  const ml=conc>0?dmcg/conc:0;
+  const rows=[0.25,0.5,1,2].map(m=>({l:`${m}× — ${m*d} ${u}`,ml:(conc>0?m*dmcg/conc:0).toFixed(3),u:((conc>0?m*dmcg/conc:0)*100).toFixed(1)}));
+  const IS={width:"100%",background:"#141414",border:"1px solid #242424",borderRadius:8,padding:"9px 12px",color:"#fff",fontSize:14,outline:"none",boxSizing:"border-box"};
+  const LS={color:"#9ca3af",fontSize:11.5,display:"block",marginBottom:5,fontWeight:500};
   return (
-    <div style={{ maxWidth: 500 }}>
-      <h3 style={{ color: "#fff", fontFamily: "'DM Sans', sans-serif", marginBottom: 20, fontSize: 18 }}>
-        Reconstitution Calculator
-      </h3>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 24 }}>
-        <CalcInput label="Vial Size (mg)" value={vialMg} onChange={setVialMg} min={0.1} step={0.5} />
-        <CalcInput label="Bac Water Added (ml)" value={bacWater} onChange={setBacWater} min={0.1} step={0.5} />
-        <div>
-          <label style={{ color: "#9ca3af", fontSize: 12, display: "block", marginBottom: 6 }}>Desired Dose</label>
-          <div style={{ display: "flex", gap: 6 }}>
-            <input
-              type="number" value={desiredDose}
-              onChange={e => setDesiredDose(+e.target.value)}
-              style={{
-                flex: 1, background: "#1a1a1a", border: "1px solid #2d2d2d",
-                borderRadius: 8, padding: "9px 12px", color: "#fff", fontSize: 14, outline: "none"
-              }}
-            />
-            <select value={unit} onChange={e => setUnit(e.target.value)} style={{
-              background: "#1a1a1a", border: "1px solid #2d2d2d", borderRadius: 8,
-              color: "#fff", padding: "0 10px", fontSize: 13, outline: "none"
-            }}>
-              {UNITS.map(u => <option key={u}>{u}</option>)}
+    <div style={{maxWidth:520}}>
+      <h3 style={{color:"#fff",margin:"0 0 4px",fontSize:17}}>Reconstitution Calculator</h3>
+      <p style={{color:"#4b5563",fontSize:12,marginBottom:18}}>Enter vial size and bacteriostatic water volume to calculate draw amounts.</p>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:11,marginBottom:16}}>
+        <div><label style={LS}>Vial Size (mg)</label><input type="number" value={vm} step={0.5} onChange={e=>setVm(+e.target.value)} style={IS}/></div>
+        <div><label style={LS}>Bac Water Added (mL)</label><input type="number" value={bw} step={0.5} onChange={e=>setBw(+e.target.value)} style={IS}/></div>
+        <div style={{gridColumn:"1/-1"}}>
+          <label style={LS}>Desired Dose per Injection</label>
+          <div style={{display:"flex",gap:7}}>
+            <input type="number" value={d} onChange={e=>setD(+e.target.value)} style={{...IS,flex:1}}/>
+            <select value={u} onChange={e=>setU(e.target.value)} style={{background:"#141414",border:"1px solid #242424",borderRadius:8,color:"#fff",padding:"0 10px",fontSize:13,outline:"none"}}>
+              {["mcg","mg"].map(x=><option key={x}>{x}</option>)}
             </select>
           </div>
         </div>
       </div>
-
-      <div style={{
-        background: "linear-gradient(135deg, #0f1f2e 0%, #0d0d0d 100%)",
-        border: "1px solid #38bdf844", borderRadius: 16, padding: 20, marginBottom: 24
-      }}>
-        <div style={{ color: "#38bdf8", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>
-          Reconstitution Results
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-          <ResultBox label="Concentration" value={concentration.toFixed(1)} unit="mcg/ml" />
-          <ResultBox label="Draw Volume" value={drawMl.toFixed(3)} unit="ml" />
-          <ResultBox label="Syringe Units" value={drawUnits.toFixed(1)} unit="units (U100)" />
-        </div>
-      </div>
-
-      <h3 style={{ color: "#fff", fontFamily: "'DM Sans', sans-serif", marginBottom: 14, fontSize: 16 }}>
-        Dose Reference Table
-      </h3>
-      <div style={{ background: "#111", border: "1px solid #1f1f1f", borderRadius: 12, overflow: "hidden" }}>
-        <div style={{
-          display: "grid", gridTemplateColumns: "2fr 1fr 1fr",
-          background: "#1a1a1a", padding: "10px 14px"
-        }}>
-          {["Dose", "Volume (ml)", "Syringe Units"].map(h => (
-            <div key={h} style={{ color: "#6b7280", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>{h}</div>
+      <div style={{background:"linear-gradient(135deg,#071020,#0d0d0d)",border:"1px solid #38bdf840",borderRadius:13,padding:15,marginBottom:18}}>
+        <div style={{color:"#38bdf8",fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:".1em",marginBottom:12}}>Results</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+          {[["Concentration",conc.toFixed(1),"mcg/mL"],["Draw Volume",ml.toFixed(3),"mL"],["Syringe Mark",(ml*100).toFixed(1),"U-100"]].map(([l,v,u])=>(
+            <div key={l} style={{background:"#0a0a0a",borderRadius:9,padding:10,textAlign:"center"}}>
+              <div style={{color:"#4b5563",fontSize:9,textTransform:"uppercase",marginBottom:2}}>{l}</div>
+              <div style={{color:"#38bdf8",fontSize:19,fontWeight:800,fontFamily:"monospace"}}>{v}</div>
+              <div style={{color:"#374151",fontSize:9.5}}>{u}</div>
+            </div>
           ))}
         </div>
-        {rows.map((r, i) => (
-          <div key={i} style={{
-            display: "grid", gridTemplateColumns: "2fr 1fr 1fr",
-            padding: "10px 14px", borderTop: "1px solid #1f1f1f"
-          }}>
-            <div style={{ color: "#e5e7eb", fontSize: 13 }}>{r.label}</div>
-            <div style={{ color: "#38bdf8", fontSize: 13, fontWeight: 600 }}>{r.ml}</div>
-            <div style={{ color: "#a78bfa", fontSize: 13, fontWeight: 600 }}>{r.units}</div>
+      </div>
+      <div style={{background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:11,overflow:"hidden",marginBottom:18}}>
+        <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",background:"#141414",padding:"7px 13px"}}>
+          {["Dose","Volume (mL)","Syringe"].map(h=><div key={h} style={{color:"#4b5563",fontSize:9.5,fontWeight:700,textTransform:"uppercase"}}>{h}</div>)}
+        </div>
+        {rows.map((r,i)=>(
+          <div key={i} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",padding:"8px 13px",borderTop:"1px solid #1a1a1a"}}>
+            <div style={{color:"#e5e7eb",fontSize:12}}>{r.l}</div>
+            <div style={{color:"#38bdf8",fontSize:12,fontWeight:600}}>{r.ml}</div>
+            <div style={{color:"#a78bfa",fontSize:12,fontWeight:600}}>{r.u}</div>
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-function CalcInput({ label, value, onChange, min, step }) {
-  return (
-    <div>
-      <label style={{ color: "#9ca3af", fontSize: 12, display: "block", marginBottom: 6 }}>{label}</label>
-      <input
-        type="number" value={value} min={min} step={step}
-        onChange={e => onChange(+e.target.value)}
-        style={{
-          width: "100%", background: "#1a1a1a", border: "1px solid #2d2d2d",
-          borderRadius: 8, padding: "9px 12px", color: "#fff", fontSize: 14,
-          outline: "none", boxSizing: "border-box"
-        }}
-      />
-    </div>
-  );
-}
-
-function ResultBox({ label, value, unit }) {
-  return (
-    <div style={{ background: "#0d0d0d", borderRadius: 10, padding: 12, textAlign: "center" }}>
-      <div style={{ color: "#6b7280", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>{label}</div>
-      <div style={{ color: "#38bdf8", fontSize: 22, fontWeight: 800, fontFamily: "monospace" }}>{value}</div>
-      <div style={{ color: "#4b5563", fontSize: 11 }}>{unit}</div>
-    </div>
-  );
-}
-
-// ─── SUPPLEMENT TRACKER ─────────────────────────────────────────────────────
-
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const TIMES = ["Morning", "Afternoon", "Evening", "Night", "As Needed"];
-
-function SupplementTab() {
-  const [supplements, setSupplements] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("peptide_supps") || "[]"); } catch { return []; }
-  });
-  const [form, setForm] = useState({ name: "", dose: "", unit: "mcg", frequency: "Once daily", time: "Morning", days: [...DAYS], notes: "" });
-  const [adding, setAdding] = useState(false);
-  const [checkedToday, setCheckedToday] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("peptide_checked") || "{}"); } catch { return {}; }
-  });
-
-  useEffect(() => {
-    localStorage.setItem("peptide_supps", JSON.stringify(supplements));
-  }, [supplements]);
-
-  useEffect(() => {
-    localStorage.setItem("peptide_checked", JSON.stringify(checkedToday));
-  }, [checkedToday]);
-
-  const addSupplement = () => {
-    if (!form.name.trim()) return;
-    setSupplements(prev => [...prev, { ...form, id: Date.now() }]);
-    setForm({ name: "", dose: "", unit: "mcg", frequency: "Once daily", time: "Morning", days: [...DAYS], notes: "" });
-    setAdding(false);
-  };
-
-  const remove = (id) => setSupplements(prev => prev.filter(s => s.id !== id));
-
-  const toggleCheck = (id) => {
-    const key = `${id}_${new Date().toDateString()}`;
-    setCheckedToday(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const isChecked = (id) => !!checkedToday[`${id}_${new Date().toDateString()}`];
-
-  const byTime = TIMES.reduce((acc, t) => {
-    acc[t] = supplements.filter(s => s.time === t);
-    return acc;
-  }, {});
-
-  return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <h3 style={{ color: "#fff", fontFamily: "'DM Sans', sans-serif", margin: 0, fontSize: 18 }}>My Stack</h3>
-        <button onClick={() => setAdding(!adding)} style={{
-          background: "#6366f1", border: "none", color: "#fff",
-          borderRadius: 10, padding: "8px 18px", fontSize: 13, fontWeight: 700,
-          cursor: "pointer"
-        }}>{adding ? "Cancel" : "+ Add"}</button>
+      <div style={{background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:11,padding:13}}>
+        <div style={{color:"#facc15",fontSize:9.5,fontWeight:700,textTransform:"uppercase",marginBottom:7}}>💡 How to Read This</div>
+        <p style={{color:"#6b7280",fontSize:12,margin:0,lineHeight:1.65}}>
+          <b style={{color:"#e5e7eb"}}>Concentration</b> — mcg in each mL of reconstituted solution.<br/>
+          <b style={{color:"#e5e7eb"}}>Draw Volume</b> — mL to pull into the syringe.<br/>
+          <b style={{color:"#e5e7eb"}}>Syringe Mark</b> — the number on a U-100 insulin syringe to fill to.
+        </p>
       </div>
+    </div>
+  );
+}
 
-      {adding && (
-        <div style={{
-          background: "#111", border: "1px solid #2d2d2d", borderRadius: 14,
-          padding: 20, marginBottom: 24
-        }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={labelStyle}>Name</label>
-              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="e.g. BPC-157, Creatine..." style={inputStyle} />
-            </div>
-            <div>
-              <label style={labelStyle}>Dose Amount</label>
-              <input value={form.dose} onChange={e => setForm(f => ({ ...f, dose: e.target.value }))}
-                placeholder="e.g. 500" style={inputStyle} />
-            </div>
-            <div>
-              <label style={labelStyle}>Unit</label>
-              <select value={form.unit} onChange={e => setForm(f => ({ ...f, unit: e.target.value }))} style={selectStyle}>
-                {UNITS.map(u => <option key={u}>{u}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>Frequency</label>
-              <select value={form.frequency} onChange={e => setForm(f => ({ ...f, frequency: e.target.value }))} style={selectStyle}>
-                {FREQUENCIES.map(fr => <option key={fr}>{fr}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>Time of Day</label>
-              <select value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} style={selectStyle}>
-                {TIMES.map(t => <option key={t}>{t}</option>)}
-              </select>
-            </div>
+// ─── My Stack ─────────────────────────────────────────────────────────────────
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const TIMES=["Morning","Pre-Workout","Afternoon","Evening","Night","As Needed"];
+const UNITS=["mcg","mg","IU","mL","capsule","spray"];
+const FREQS=["Daily","Twice daily","3× daily","Every other day","Weekly","Twice weekly","3× weekly","As needed"];
+
+function Stack() {
+  const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||d;}catch{return d;}};
+  const [items,setItems]=useState(()=>load("pp_stack",[]));
+  const [chk,setChk]=useState(()=>load("pp_chk",{}));
+  const [open,setOpen]=useState(false);
+  const [f,setF]=useState({name:"",dose:"",unit:"mcg",freq:"Daily",time:"Morning",days:[...DAYS],notes:""});
+  useEffect(()=>{localStorage.setItem("pp_stack",JSON.stringify(items));},[items]);
+  useEffect(()=>{localStorage.setItem("pp_chk",JSON.stringify(chk));},[chk]);
+  const today=()=>new Date().toDateString();
+  const isChk=id=>!!chk[`${id}_${today()}`];
+  const tog=id=>setChk(p=>({...p,[`${id}_${today()}`]:!p[`${id}_${today()}`]}));
+  const rm=id=>setItems(p=>p.filter(x=>x.id!==id));
+  const add=()=>{if(!f.name.trim())return;setItems(p=>[...p,{...f,id:Date.now()}]);setF({name:"",dose:"",unit:"mcg",freq:"Daily",time:"Morning",days:[...DAYS],notes:""});setOpen(false);};
+  const done=items.filter(x=>isChk(x.id)).length;
+  const byT=TIMES.reduce((a,t)=>({...a,[t]:items.filter(x=>x.time===t)}),{});
+  const IS2={width:"100%",background:"#141414",border:"1px solid #242424",borderRadius:8,padding:"9px 12px",color:"#fff",fontSize:13,outline:"none",boxSizing:"border-box"};
+  const LS2={color:"#9ca3af",fontSize:11,display:"block",marginBottom:4,fontWeight:500};
+  return (
+    <div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div><h3 style={{color:"#fff",margin:0,fontSize:17}}>My Stack</h3>
+          {items.length>0&&<div style={{color:"#4b5563",fontSize:11,marginTop:2}}>{done}/{items.length} taken today</div>}</div>
+        <button onClick={()=>setOpen(!open)} style={{background:open?"#374151":"#6366f1",border:"none",color:"#fff",borderRadius:9,padding:"7px 15px",fontSize:13,fontWeight:700,cursor:"pointer"}}>{open?"Cancel":"+ Add"}</button>
+      </div>
+      {items.length>0&&(
+        <div style={{background:"#141414",border:"1px solid #1a1a1a",borderRadius:10,padding:"9px 13px",marginBottom:14}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+            <span style={{color:"#6b7280",fontSize:11.5}}>Today's progress</span>
+            <span style={{color:"#6366f1",fontSize:11.5,fontWeight:700}}>{items.length?Math.round(done/items.length*100):0}%</span>
           </div>
-          <div style={{ marginBottom: 12 }}>
-            <label style={labelStyle}>Days</label>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {DAYS.map(d => (
-                <button key={d} onClick={() => setForm(f => ({
-                  ...f, days: f.days.includes(d) ? f.days.filter(x => x !== d) : [...f.days, d]
-                }))} style={{
-                  background: form.days.includes(d) ? "#6366f1" : "#1a1a1a",
-                  border: `1px solid ${form.days.includes(d) ? "#6366f1" : "#2d2d2d"}`,
-                  color: form.days.includes(d) ? "#fff" : "#6b7280",
-                  borderRadius: 8, padding: "5px 10px", fontSize: 12, cursor: "pointer", fontWeight: 600
-                }}>{d}</button>
+          <div style={{background:"#1a1a1a",borderRadius:5,height:5,overflow:"hidden"}}>
+            <div style={{background:"linear-gradient(90deg,#6366f1,#38bdf8)",height:"100%",borderRadius:5,width:`${items.length?done/items.length*100:0}%`,transition:"width .4s"}}/>
+          </div>
+        </div>
+      )}
+      {open&&(
+        <div style={{background:"#0d0d0d",border:"1px solid #242424",borderRadius:13,padding:15,marginBottom:16}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:9}}>
+            <div style={{gridColumn:"1/-1"}}><label style={LS2}>Compound Name</label><input value={f.name} onChange={e=>setF(x=>({...x,name:e.target.value}))} placeholder="e.g. BPC-157" style={IS2}/></div>
+            <div><label style={LS2}>Dose</label><input value={f.dose} onChange={e=>setF(x=>({...x,dose:e.target.value}))} placeholder="e.g. 500" style={IS2}/></div>
+            <div><label style={LS2}>Unit</label><select value={f.unit} onChange={e=>setF(x=>({...x,unit:e.target.value}))} style={{...IS2,appearance:"none"}}>{UNITS.map(u=><option key={u}>{u}</option>)}</select></div>
+            <div><label style={LS2}>Frequency</label><select value={f.freq} onChange={e=>setF(x=>({...x,freq:e.target.value}))} style={{...IS2,appearance:"none"}}>{FREQS.map(r=><option key={r}>{r}</option>)}</select></div>
+            <div><label style={LS2}>Time of Day</label><select value={f.time} onChange={e=>setF(x=>({...x,time:e.target.value}))} style={{...IS2,appearance:"none"}}>{TIMES.map(t=><option key={t}>{t}</option>)}</select></div>
+          </div>
+          <div style={{marginBottom:9}}><label style={LS2}>Days of Week</label>
+            <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+              {DAYS.map(d=>(
+                <button key={d} onClick={()=>setF(x=>({...x,days:x.days.includes(d)?x.days.filter(y=>y!==d):[...x.days,d]}))}
+                  style={{background:f.days.includes(d)?"#6366f1":"#141414",border:`1px solid ${f.days.includes(d)?"#6366f1":"#242424"}`,color:f.days.includes(d)?"#fff":"#4b5563",borderRadius:7,padding:"3px 9px",fontSize:11,cursor:"pointer",fontWeight:600}}>{d}</button>
               ))}
             </div>
           </div>
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>Notes (optional)</label>
-            <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-              placeholder="e.g. take fasted, refrigerate..." style={inputStyle} />
-          </div>
-          <button onClick={addSupplement} style={{
-            background: "#6366f1", border: "none", color: "#fff",
-            borderRadius: 10, padding: "10px 24px", fontWeight: 700, cursor: "pointer", fontSize: 14
-          }}>Save to Stack</button>
+          <div style={{marginBottom:11}}><label style={LS2}>Notes (optional)</label><input value={f.notes} onChange={e=>setF(x=>({...x,notes:e.target.value}))} placeholder="take fasted, before bed, with food…" style={IS2}/></div>
+          <button onClick={add} style={{background:"#6366f1",border:"none",color:"#fff",borderRadius:9,padding:"9px 20px",fontWeight:700,cursor:"pointer",fontSize:14}}>Add to Stack</button>
         </div>
       )}
-
-      {supplements.length === 0 && !adding && (
-        <div style={{
-          textAlign: "center", padding: "60px 20px", color: "#4b5563"
-        }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>💊</div>
-          <div style={{ fontSize: 16, color: "#6b7280" }}>Your stack is empty</div>
-          <div style={{ fontSize: 13, marginTop: 6 }}>Add your peptides and supplements above</div>
+      {items.length===0&&!open&&(
+        <div style={{textAlign:"center",padding:"55px 20px"}}>
+          <div style={{fontSize:40,marginBottom:10}}>💊</div>
+          <div style={{color:"#4b5563",fontSize:15}}>Your stack is empty</div>
+          <div style={{color:"#374151",fontSize:12,marginTop:4}}>Add compounds to track your daily protocol</div>
         </div>
       )}
-
-      {TIMES.map(time => {
-        const items = byTime[time];
-        if (!items.length) return null;
+      {TIMES.map(time=>{
+        const grp=byT[time]||[];
+        if(!grp.length) return null;
         return (
-          <div key={time} style={{ marginBottom: 24 }}>
-            <div style={{
-              color: "#6366f1", fontSize: 11, fontWeight: 700,
-              textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10
-            }}>{time}</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {items.map(s => {
-                const checked = isChecked(s.id);
-                return (
-                  <div key={s.id} style={{
-                    background: checked ? "#0f1a0f" : "#111",
-                    border: `1px solid ${checked ? "#22c55e44" : "#1f1f1f"}`,
-                    borderRadius: 12, padding: "14px 16px",
-                    display: "flex", alignItems: "center", gap: 14,
-                    transition: "all 0.2s"
-                  }}>
-                    <button onClick={() => toggleCheck(s.id)} style={{
-                      width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-                      background: checked ? "#22c55e" : "#1a1a1a",
-                      border: `2px solid ${checked ? "#22c55e" : "#374151"}`,
-                      color: "#fff", fontSize: 14, cursor: "pointer", display: "flex",
-                      alignItems: "center", justifyContent: "center"
-                    }}>{checked ? "✓" : ""}</button>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>{s.name}</div>
-                      <div style={{ color: "#6b7280", fontSize: 12, marginTop: 2 }}>
-                        {s.dose && `${s.dose} ${s.unit} · `}{s.frequency} · {s.days.join(", ")}
-                      </div>
-                      {s.notes && <div style={{ color: "#4b5563", fontSize: 11, marginTop: 3 }}>💡 {s.notes}</div>}
-                    </div>
-                    <button onClick={() => remove(s.id)} style={{
-                      background: "none", border: "none", color: "#374151",
-                      cursor: "pointer", fontSize: 18, padding: 4,
-                      transition: "color 0.15s"
-                    }}
-                      onMouseEnter={e => e.currentTarget.style.color = "#ef4444"}
-                      onMouseLeave={e => e.currentTarget.style.color = "#374151"}
-                    >×</button>
+          <div key={time} style={{marginBottom:18}}>
+            <div style={{color:"#6366f1",fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:".1em",marginBottom:7}}>{time}</div>
+            {grp.map(item=>{
+              const d=isChk(item.id);
+              return (
+                <div key={item.id} style={{background:d?"#071a0e":"#0d0d0d",border:`1px solid ${d?"#22c55e30":"#1a1a1a"}`,borderRadius:11,padding:"11px 13px",display:"flex",alignItems:"center",gap:10,marginBottom:6,transition:"all .2s"}}>
+                  <button onClick={()=>tog(item.id)} style={{width:25,height:25,borderRadius:6,flexShrink:0,background:d?"#22c55e":"#1a1a1a",border:`2px solid ${d?"#22c55e":"#374151"}`,color:"#fff",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{d?"✓":""}</button>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{color:"#f9fafb",fontWeight:600,fontSize:13.5}}>{item.name}</div>
+                    <div style={{color:"#4b5563",fontSize:10.5,marginTop:1}}>{item.dose&&`${item.dose} ${item.unit} · `}{item.freq} · {item.days.join(", ")}</div>
+                    {item.notes&&<div style={{color:"#374151",fontSize:10.5,marginTop:2}}>💡 {item.notes}</div>}
                   </div>
-                );
-              })}
-            </div>
+                  <button onClick={()=>rm(item.id)} style={{background:"none",border:"none",color:"#2d2d2d",cursor:"pointer",fontSize:18,padding:3,transition:"color .15s"}} onMouseEnter={e=>e.currentTarget.style.color="#ef4444"} onMouseLeave={e=>e.currentTarget.style.color="#2d2d2d"}>×</button>
+                </div>
+              );
+            })}
           </div>
         );
       })}
@@ -651,90 +336,34 @@ function SupplementTab() {
   );
 }
 
-const labelStyle = { color: "#9ca3af", fontSize: 12, display: "block", marginBottom: 5, fontWeight: 500 };
-const inputStyle = {
-  width: "100%", background: "#1a1a1a", border: "1px solid #2d2d2d",
-  borderRadius: 8, padding: "9px 12px", color: "#fff", fontSize: 14,
-  outline: "none", boxSizing: "border-box"
-};
-const selectStyle = {
-  width: "100%", background: "#1a1a1a", border: "1px solid #2d2d2d",
-  borderRadius: 8, padding: "9px 12px", color: "#fff", fontSize: 14,
-  outline: "none", appearance: "none"
-};
-
-// ─── APP SHELL ───────────────────────────────────────────────────────────────
-
-const TABS = [
-  { id: "library", label: "Library", icon: "🔬" },
-  { id: "calculator", label: "Calculator", icon: "⚗️" },
-  { id: "stack", label: "My Stack", icon: "💊" },
-];
+// ─── Root ─────────────────────────────────────────────────────────────────────
+const TABS=[{id:"library",l:"Library",i:"🔬"},{id:"calc",l:"Calculator",i:"⚗️"},{id:"stack",l:"My Stack",i:"💊"}];
 
 export default function App() {
-  const [tab, setTab] = useState("library");
-
+  const [tab,setTab]=useState("library");
   return (
-    <div style={{
-      minHeight: "100vh", background: "#080808", fontFamily: "'DM Sans', sans-serif",
-      color: "#fff"
-    }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
-        * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #111; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        input::placeholder { color: #4b5563; }
-      `}</style>
-
-      {/* Header */}
-      <div style={{
-        background: "linear-gradient(90deg, #0d0d0d 0%, #111 100%)",
-        borderBottom: "1px solid #1a1a1a", padding: "16px 20px",
-        display: "flex", alignItems: "center", gap: 12
-      }}>
-        <div style={{
-          width: 38, height: 38, background: "linear-gradient(135deg, #6366f1, #38bdf8)",
-          borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18
-        }}>🧬</div>
+    <div style={{minHeight:"100vh",background:"#080808",fontFamily:"'DM Sans',sans-serif",color:"#fff"}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');*{box-sizing:border-box}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:3px}input::placeholder{color:#374151}a{color:inherit}`}</style>
+      <div style={{background:"#0a0a0a",borderBottom:"1px solid #141414",padding:"12px 16px",display:"flex",alignItems:"center",gap:10}}>
+        <div style={{width:34,height:34,background:"linear-gradient(135deg,#6366f1,#38bdf8)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontSize:17}}>🧬</div>
         <div>
-          <div style={{ fontWeight: 800, fontSize: 17, letterSpacing: "-0.01em" }}>PeptidePro</div>
-          <div style={{ color: "#4b5563", fontSize: 11, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" }}>Research & Dosing Companion</div>
+          <div style={{fontWeight:800,fontSize:15,letterSpacing:"-.01em"}}>PeptidePro</div>
+          <div style={{color:"#374151",fontSize:9.5,fontWeight:600,textTransform:"uppercase",letterSpacing:".08em"}}>{ALL.length} Compounds · Deep Reference Guide</div>
         </div>
       </div>
-
-      {/* Tabs */}
-      <div style={{
-        display: "flex", borderBottom: "1px solid #1a1a1a",
-        background: "#0d0d0d", position: "sticky", top: 0, zIndex: 100
-      }}>
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
-            flex: 1, background: "none", border: "none",
-            borderBottom: tab === t.id ? "2px solid #6366f1" : "2px solid transparent",
-            color: tab === t.id ? "#fff" : "#6b7280",
-            padding: "12px 8px", cursor: "pointer", fontSize: 13, fontWeight: 600,
-            transition: "all 0.15s", display: "flex", alignItems: "center", justifyContent: "center", gap: 6
-          }}>
-            <span>{t.icon}</span> {t.label}
+      <div style={{display:"flex",borderBottom:"1px solid #141414",background:"#0a0a0a",position:"sticky",top:0,zIndex:100}}>
+        {TABS.map(t=>(
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,background:"none",border:"none",borderBottom:`2px solid ${tab===t.id?"#6366f1":"transparent"}`,color:tab===t.id?"#fff":"#4b5563",padding:"11px 6px",cursor:"pointer",fontSize:12.5,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",gap:5,transition:"color .15s"}}>
+            <span>{t.i}</span>{t.l}
           </button>
         ))}
       </div>
-
-      {/* Content */}
-      <div style={{ padding: "20px 16px", maxWidth: 900, margin: "0 auto" }}>
-        {tab === "library" && <LibraryTab />}
-        {tab === "calculator" && <CalculatorTab />}
-        {tab === "stack" && <SupplementTab />}
+      <div style={{padding:"14px 12px",maxWidth:980,margin:"0 auto"}}>
+        {tab==="library"&&<Library/>}
+        {tab==="calc"&&<Calc/>}
+        {tab==="stack"&&<Stack/>}
       </div>
-
-      {/* Footer disclaimer */}
-      <div style={{
-        textAlign: "center", padding: "20px 16px 32px", color: "#374151", fontSize: 11
-      }}>
-        ⚠️ For educational and research purposes only. Consult a physician before use.
-      </div>
+      <div style={{textAlign:"center",padding:"12px 16px 32px",color:"#1f2937",fontSize:10}}>⚠️ For educational & research purposes only. Not medical advice. Consult a physician before use.</div>
     </div>
   );
 }
